@@ -19,9 +19,6 @@ class HTTPRelay(eg.PluginBase):
         self.AddAction(sendPOSTRequestWithBody)
 		
     def __start__(self):
-        #self.host = host
-        #self.port = port
-        #print "HTTPRelay Plugin is started with parameter: {0}:{1}".format(self.host, self.port)
         print "HTTPRelay Plugin started"
 				
     def Configure(self):
@@ -59,14 +56,14 @@ class HTTPRelay(eg.PluginBase):
 			
 	
 class sendYowsupMessage(eg.ActionBase):
-    name = "Send a message using Yowsup"
-
     def __call__(self, protocol, host, port, message):
         message = message.encode('utf-8')
         print "Sending message '{0}'".format(message)
         parameter = urllib.urlencode({'message' : message})
         dataBody = self.plugin.SendGETRequest(protocol, host, port, "/cgi-bin/yowsup.py?{0}".format(parameter))
-        
+
+    def GetLabel(self, protocol, host, port, message):
+        return "Send '{3}' to Yowsup Server: {0}://{1}:{2}".format(protocol, host, port, message)
 
     def Configure(self, protocol="http", host="192.168.1.103", port=80, message=""):
         panel = eg.ConfigPanel(self)
@@ -77,7 +74,7 @@ class sendYowsupMessage(eg.ActionBase):
         panel.sizer.AddMany([
             panel.StaticText("Protocol:"),
             protocolCtrl,
-            panel.StaticText("Host:"),
+            panel.StaticText("Yowsup Host:"),
             hostCtrl,
             panel.StaticText("Port:"),
             portCtrl,
@@ -89,16 +86,16 @@ class sendYowsupMessage(eg.ActionBase):
                 protocolCtrl.GetValue(),
                 hostCtrl.GetValue(),
                 portCtrl.GetValue(),
-                messageCtrl.GetValue(),
+                messageCtrl.GetValue()
             )
 
 class sendRequest(eg.ActionBase):
-    name = "Send a GET request"
-
     def __call__(self, protocol, host, port, request):
         #request = request.encode('utf-8')
         eg.globals.httprelayresponse = self.plugin.SendGETRequest(protocol, host, port, request)
-        
+
+    def GetLabel(self, protocol, host, port, request):
+        return "Send a GET request to: {0}://{1}:{2}{3}".format(protocol, host, port, request)
 				
     def Configure(self, protocol="http", host="192.168.1.101", port=8000, request=""):
         panel = eg.ConfigPanel(self)
@@ -121,18 +118,18 @@ class sendRequest(eg.ActionBase):
                 protocolCtrl.GetValue(),
                 hostCtrl.GetValue(),
                 portCtrl.GetValue(),
-                requestCtrl.GetValue(),
+                requestCtrl.GetValue()
             )
 
 class sendPOSTRequestWithBody(eg.ActionBase):
-    name = "Send a POST request"
-
     def __call__(self, protocol, host, port, request, body):
         #request = request.encode('utf-8')
         headers = {"Content-type": "text/xml"}
         eg.globals.httprelayresponse = self.plugin.SendPOSTRequest(protocol, host, port, request, body, headers)
+
+    def GetLabel(self, protocol, host, port, request, body):
+        return "Send a POST request with body to: {0}://{1}:{2}{3}".format(protocol, host, port, request)
         
-				
     def Configure(self, protocol="http", host="192.168.1.101", port=8000, request="", body=""):
         panel = eg.ConfigPanel(self)
         protocolCtrl = panel.TextCtrl(protocol)
@@ -158,5 +155,5 @@ class sendPOSTRequestWithBody(eg.ActionBase):
                 hostCtrl.GetValue(),
                 portCtrl.GetValue(),
                 requestCtrl.GetValue(),
-                bodyCtrl.GetValue(),
+                bodyCtrl.GetValue()
             )
